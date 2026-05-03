@@ -1,0 +1,385 @@
+/* --- RESET E VARIÁVEIS --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root {
+    --deep-ocean: #000814;
+    --navy-blue: #001d3d;
+    --royal-blue: #003566;
+    --electric-blue: #00b4d8;
+    --cyan-light: #90e0ef;
+    --glass: rgba(0, 20, 39, 0.85);
+    --border-glass: rgba(144, 224, 239, 0.2);
+    --hit: #e63946;
+    --miss: #a8dadc;
+    --radar-green: #00ff41;
+}
+
+body {
+    background-color: var(--deep-ocean);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* --- TELA DE LOGIN --- */
+#login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, var(--navy-blue) 0%, var(--deep-ocean) 100%);
+    z-index: 1000;
+}
+
+.login-card {
+    position: relative;
+    z-index: 10;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    padding: 50px 40px;
+    border-radius: 28px;
+    border: 1px solid var(--border-glass);
+    text-align: center;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+}
+
+.ship-icon-main {
+    font-size: 4.5rem;
+    color: var(--electric-blue);
+    margin-bottom: 20px;
+    display: inline-block;
+    animation: float-ship 3s ease-in-out infinite;
+}
+
+@keyframes float-ship {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+/* --- ONDAS DO MAR (GLOBAL) --- */
+.waves-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 200" fill="%230077b6"><path d="M0,100 C200,150 400,50 600,100 C800,150 1000,50 1200,100 C1400,150 1600,50 1600,100 V200 H0 Z" /></svg>');
+    background-size: 1000px 180px;
+}
+
+.wave:nth-child(1) { animation: wave-move 20s infinite; opacity: 0.2; bottom: 15px; }
+.wave:nth-child(2) { animation: wave-move 13s -2s infinite; opacity: 0.5; bottom: 10px; }
+.wave:nth-child(3) { animation: wave-move 8s -5s infinite; opacity: 0.8; }
+
+@keyframes wave-move {
+    0% { transform: translateX(0) scaleY(1); }
+    50% { transform: translateX(-25%) scaleY(0.8); }
+    100% { transform: translateX(-50%) scaleY(1); }
+}
+
+/* --- ÁREA DO JOGO --- */
+#game-screen {
+    position: relative;
+    z-index: 10;
+    padding: 20px;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.game-header {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: var(--glass);
+    border-radius: 15px;
+    border-bottom: 2px solid var(--electric-blue);
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.turn-display-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+#header-turn-msg {
+    font-weight: bold;
+    color: var(--cyan-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.your-turn-glow {
+    color: #00ff00 !important;
+    text-shadow: 0 0 10px #00ff00;
+    animation: pulse-turn 1.5s infinite;
+}
+
+@keyframes pulse-turn {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.6; }
+}
+
+/* --- LAYOUT PRINCIPAL (SONAR + TABULEIROS) --- */
+.main-layout {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* --- SONAR REALISTA --- */
+#sonar-container {
+    width: 220px;
+    background: var(--glass);
+    border: 1px solid var(--border-glass);
+    border-left: 4px solid var(--radar-green);
+    border-radius: 12px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.sonar-header {
+    font-size: 0.7rem;
+    color: var(--radar-green);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.radar-display {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    background: radial-gradient(circle, #001a0f 0%, #000814 100%);
+    border: 2px solid var(--radar-green);
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+}
+
+.radar-circles {
+    position: absolute;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(circle, transparent 30%, rgba(0, 255, 65, 0.05) 31%, transparent 32%, transparent 60%, rgba(0, 255, 65, 0.05) 61%, transparent 62%);
+    border-radius: 50%;
+}
+
+.radar-sweep {
+    position: absolute;
+    width: 100%; height: 100%;
+    background: conic-gradient(from 0deg, rgba(0, 255, 65, 0.3) 0deg, transparent 90deg);
+    animation: rotate-radar 4s linear infinite;
+}
+
+@keyframes rotate-radar {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.blip {
+    position: absolute;
+    width: 5px; height: 5px;
+    background: var(--radar-green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--radar-green);
+    animation: blip-fade 2s infinite;
+}
+
+@keyframes blip-fade {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+}
+
+#player-list {
+    list-style: none;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.player-item {
+    font-size: 0.85rem;
+    color: var(--cyan-light);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(144, 224, 239, 0.1);
+}
+
+.player-item.is-me { color: white; font-weight: bold; }
+
+/* --- TABULEIROS --- */
+.battlefield {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.grid-box h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--cyan-light);
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(10, 38px);
+    grid-template-rows: repeat(10, 38px);
+    gap: 2px;
+    background: rgba(144, 224, 239, 0.1);
+    padding: 8px;
+    border: 1px solid var(--royal-blue);
+}
+
+.cell {
+    width: 38px; height: 38px;
+    background: rgba(0, 53, 102, 0.4);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cell:hover { background: var(--royal-blue); }
+.cell.ship i { color: var(--cyan-light); font-size: 1.2rem; }
+.cell.hit { background: var(--hit) !important; box-shadow: 0 0 10px var(--hit); }
+.cell.miss { background: var(--miss) !important; opacity: 0.6; }
+
+/* --- INPUTS E BOTÕES --- */
+input[type="text"] {
+    width: 100%; padding: 16px; margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.05); border: 2px solid var(--royal-blue);
+    border-radius: 12px; color: white; text-align: center; outline: none;
+}
+
+button {
+    width: 100%; padding: 18px; background: #0077b6; color: white;
+    border: none; border-radius: 12px; font-weight: bold; cursor: pointer;
+    text-transform: uppercase; transition: 0.3s;
+}
+
+button:hover { background: var(--electric-blue); transform: translateY(-3px); }
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 1000px) {
+    .main-layout { flex-direction: column; align-items: center; }
+    #sonar-container { width: 100%; max-width: 800px; display: flex; align-items: center; gap: 20px; }
+    .radar-display { margin: 0; width: 100px; height: 100px; }
+}
+/* Blip Azul (Aliado) */
+.blip.blue-blip {
+    background: var(--electric-blue);
+    box-shadow: 0 0 10px var(--electric-blue);
+}
+
+/* Blip Vermelho (Inimigo) */
+.blip.red-blip {
+    background: #ff4d4d;
+    box-shadow: 0 0 10px #ff4d4d;
+}
+
+/* Estilo da legenda do inimigo */
+.enemy-status {
+    color: #ff4d4d !important;
+}
+
+/* Ajuste no container de blips para evitar que pontos sumam no centro */
+#radar-blips {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 3;
+}
+/* Animação de balanço (Sea Sway) */
+@keyframes sea-sway {
+    0%, 100% {
+        transform: translateY(0) rotate(-3deg);
+    }
+    50% {
+        transform: translateY(-4px) rotate(3deg);
+    }
+}
+
+/* Aplicando aos ícones de navio na sua frota */
+.cell.ship i {
+    display: inline-block; /* Necessário para que o transform funcione */
+    color: var(--cyan-light);
+    font-size: 1.2rem;
+    animation: sea-sway 3s ease-in-out infinite;
+}
+
+/* Aplicando aos ícones de fogo nos navios atingidos (opcional, para efeito de destroços) */
+.cell.hit i {
+    display: inline-block;
+    animation: sea-sway 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px var(--hit));
+}
+
+/* Diferenciando o tempo de animação para não ficarem todos sincronizados */
+.cell.ship:nth-child(odd) i {
+    animation-duration: 3.5s;
+    animation-delay: 0.5s;
+}
+
+.cell.ship:nth-child(even) i {
+    animation-duration: 2.8s;
+    animation-delay: 0.2s;
+}
+/* Esconde o cursor padrão apenas no tabuleiro inimigo */
+#enemy-grid {
+    cursor: none !important;
+}
+
+/* Estilização do cursor customizado */
+#custom-cursor {
+    position: fixed;
+    pointer-events: none; /* Garante que o clique passe através dele para a célula */
+    z-index: 9999;
+    color: #ff4d4d; /* Cor de alvo hostil */
+    font-size: 24px;
+    display: none; /* Escondido por padrão */
+    transform: translate(-50%, -50%); /* Centraliza o ícone no ponto exato do mouse */
+    filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.8));
+    transition: transform 0.1s ease-out; /* Suaviza levemente o movimento */
+}
+
+/* Efeito de clique (opcional) */
+#custom-cursor.clicking {
+    transform: translate(-50%, -50%) scale(0.8);
+    color: #fff;
+}

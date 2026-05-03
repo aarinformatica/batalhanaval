@@ -1,0 +1,90 @@
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batalha Naval - Almirante Alexandro</title>
+    <!-- Ícones e Fontes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Ably Realtime SDK -->
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen">
+        <main class="login-card">
+            <i class="fa-solid fa-ship ship-icon-main"></i>
+            <h1>BATALHA NAVAL</h1>
+            <input type="text" id="username" placeholder="Nome do Almirante" maxlength="15">
+            <button id="start-btn">ZARPAR PARA O COMBATE</button>
+        </main>
+        
+        <!-- Efeito de Ondas (Fundo Dinâmico) -->
+        <div class="waves-container">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+    </div>
+
+    <!-- ÁREA DO JOGO -->
+    <div id="game-screen" style="display: none;">
+        <header class="game-header">
+            <div class="player-info">
+                <i class="fa-solid fa-anchor"></i>
+                <span id="display-name">Almirante</span>
+            </div>
+
+            <!-- Turno Centralizado no Header -->
+            <div class="turn-display-center">
+                <span id="header-turn-msg">PREPARAR CANHÕES!</span>
+            </div>
+
+            <div id="game-status">RADAR ATIVO</div>
+        </header>
+
+        <div class="main-layout">
+            <!-- SONAR CIRCULAR (ESTILO NAVIO) -->
+            <aside id="sonar-container">
+                <div class="sonar-header">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <span>RASTREAMENTO</span>
+                </div>
+                
+                <!-- Display do Radar -->
+                <div class="radar-display">
+                    <div class="radar-sweep"></div>
+                    <div class="radar-circles"></div>
+                    <div id="radar-blips">
+                        <!-- Pontos dos jogadores injetados via JS -->
+                    </div>
+                </div>
+
+                <!-- Legenda de Almirantes Online -->
+                <ul id="player-list">
+                    <!-- Nomes aparecerão aqui -->
+                </ul>
+            </aside>
+
+            <!-- CAMPO DE BATALHA -->
+            <main class="battlefield">
+                <div class="grid-box">
+                    <h3>SUA FROTA</h3>
+                    <div id="player-grid" class="grid"></div>
+                </div>
+                
+                <div class="grid-box">
+                    <h3>OCEANO INIMIGO</h3>
+                    <div id="enemy-grid" class="grid"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+<div id="custom-cursor">
+    <i class="fa-sharp fa-thin fa-crosshairs"></i>
+</div>
+    <!-- Script Principal -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,456 +1,715 @@
-/* --- RESET E VARIÁVEIS --- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
-:root {
-    --deep-ocean: #000814;
-    --navy-blue: #001d3d;
-    --royal-blue: #003566;
-    --electric-blue: #00b4d8;
-    --cyan-light: #90e0ef;
-    --glass: rgba(0, 20, 39, 0.85);
-    --border-glass: rgba(144, 224, 239, 0.2);
-    --hit: #e63946;
-    --miss: #a8dadc;
-    --radar-green: #00ff41;
-}
-
 body {
-    background-color: var(--deep-ocean);
-    color: white;
+    margin: 0;
+    background-color: #020508;
+    color: #00f2ff;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
+    overflow: hidden;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
-/* --- TELA DE LOGIN --- */
-#login-screen {
+.overlay {
     position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 3px 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#ui-container {
+    border: 2px solid #00f2ff;
+    padding: 15px;
+    background: rgba(0, 20, 30, 0.8);
+    box-shadow: 0 0 50px rgba(0, 242, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 900px;
+    max-height: 95vh;
+}
+
+.header {
+    border-bottom: 1px solid #00f2ff;
+    padding-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+h1 { margin: 0; font-size: 1rem; letter-spacing: 2px; }
+
+#canvas-wrapper {
+    flex-grow: 1;
+    position: relative;
+    margin: 15px 0;
+    background: radial-gradient(circle, #001a1a 0%, #000505 100%);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    max-width: 100%;
+    max-height: 100%;
+    cursor: crosshair;
+}
+
+.footer {
+    border-top: 1px solid #00f2ff;
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+#audio-toggle {
+    background: transparent;
+    border: 1px solid #00f2ff;
+    color: #00f2ff;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.7rem;
+}
+
+/* Ajustes para telas pequenas */
+@media (max-width: 600px) {
+    .header { flex-direction: column; align-items: flex-start; }
+    h1 { font-size: 0.9rem; }
+    #ui-container { padding: 10px; }
+}
+#canvas-wrapper {
+    flex-grow: 1;
+    width: 100%;
+    min-height: 300px; /* Garante um espaço mínimo no mobile */
+    position: relative;
+    overflow: hidden;
+}
+/* --- TELA INICIAL (OVERLAY) --- */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 8, 10, 0.98); /* Fundo quase opaco para foco total */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Garante que fique acima de tudo */
+    transition: opacity 0.6s ease-in-out, visibility 0.6s;
+    backdrop-filter: blur(5px); /* Efeito de desfoque no fundo */
+}
+
+.menu-content {
+    text-align: center;
+    border: 1px solid #00f2ff;
+    padding: 3rem;
+    background: rgba(0, 242, 255, 0.03);
+    box-shadow: inset 0 0 30px rgba(0, 242, 255, 0.1), 0 0 20px rgba(0, 242, 255, 0.2);
+    max-width: 90%;
+    width: 450px;
+}
+
+.menu-content h1 {
+    font-size: 2.2rem;
+    color: #fff;
+    letter-spacing: 4px;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 15px #00f2ff;
+}
+
+.subtitle {
+    color: #00f2ff;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+}
+
+/* --- TEXTO DE BRIEFING --- */
+.mission-briefing {
+    text-align: left;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    color: #00ff41; /* Verde "Matrix/Radar" */
+    margin-bottom: 2.5rem;
+    padding: 15px;
+    background: rgba(0, 255, 65, 0.05);
+    border-left: 3px solid #00ff41;
+}
+
+.mission-briefing p {
+    margin: 8px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid transparent;
+    /* Simulação de digitação básica */
+    animation: typing 2s steps(40, end);
+}
+
+/* --- BOTÃO DE COMANDO --- */
+#start-btn {
+    background: transparent;
+    color: #00f2ff;
+    border: 1px solid #00f2ff;
+    padding: 12px 35px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#start-btn:hover {
+    background: rgba(0, 242, 255, 1);
+    color: #000;
+    box-shadow: 0 0 40px #00f2ff;
+    transform: scale(1.05);
+}
+
+#start-btn:active {
+    transform: scale(0.95);
+}
+
+/* --- ESTADOS --- */
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* --- ANIMAÇÕES --- */
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+/* AJUSTE PARA MOBILE */
+@media (max-width: 480px) {
+    .menu-content {
+        padding: 1.5rem;
+        width: 85%;
+    }
+    
+    .menu-content h1 {
+        font-size: 1.6rem;
+    }
+    
+    .mission-briefing {
+        font-size: 0.75rem;
+    }
+}
+/* Garante que o menu esteja acima de absolutamente tudo */
+#game-menu {
+    position: fixed; /* Mude de absolute para fixed */
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    display: flex; 
+    background: rgba(0, 8, 10, 0.95);
+    display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at center, var(--navy-blue) 0%, var(--deep-ocean) 100%);
-    z-index: 1000;
+    z-index: 9999; /* Valor bem alto */
+    pointer-events: all; /* Garante que aceite cliques */
 }
 
-.login-card {
+/* O botão precisa ser clicável e grande o suficiente no celular */
+#start-btn {
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 10000;
+    min-width: 200px;
+    min-height: 50px; /* Facilita o toque no celular */
+    touch-action: manipulation; /* Otimiza para toque */
+}
+
+/* Quando escondido, ele deve sumir totalmente da árvore de interação */
+#game-menu.hidden {
+    display: none !important;
+    pointer-events: none;
+}
+
+/* O wrapper do jogo não deve "roubar" cliques se o menu estiver aberto */
+#canvas-wrapper {
+    z-index: 1;
     position: relative;
-    z-index: 10;
-    background: var(--glass);
-    backdrop-filter: blur(12px);
-    padding: 50px 40px;
-    border-radius: 28px;
-    border: 1px solid var(--border-glass);
-    text-align: center;
-    width: 90%;
-    max-width: 420px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
 }
-
-.ship-icon-main {
-    font-size: 4.5rem;
-    color: var(--electric-blue);
-    margin-bottom: 20px;
-    display: inline-block;
-    animation: float-ship 3s ease-in-out infinite;
-}
-
-@keyframes float-ship {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(2deg); }
-}
-
-/* --- ONDAS DO MAR (GLOBAL) --- */
-.waves-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 180px;
+/*botão  recarregar*/
+#audio-toggle {
+    position: relative;
     overflow: hidden;
+    z-index: 1;
+}
+
+/* A barra de progresso que fica atrás do texto */
+#audio-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--progress, 0%); /* Controlado pelo JS */
+    background: rgba(0, 242, 255, 0.3);
+    z-index: -1;
+    transition: width 0.1s linear;
+}
+
+/* Efeito de piscar quando estiver pronto */
+.ready-pulse {
+    animation: pulse-glow 1s infinite;
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 5px rgba(0, 242, 255, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(0, 242, 255, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(0, 242, 255, 0.5); }
+}
+/* Tema Vulcânico */
+body.theme-lava {
+    background-color: #1a0500;
+    color: #ff4500;
+}
+
+body.theme-lava #gameCanvas {
+    box-shadow: 0 0 50px rgba(255, 69, 0, 0.2);
+}
+
+/* Animação de Pulsar da Lava */
+@keyframes lava-glow {
+    0% { filter: drop-shadow(0 0 2px #ff4500); }
+    50% { filter: drop-shadow(0 0 8px #ff8c00); }
+    100% { filter: drop-shadow(0 0 2px #ff4500); }
+}
+
+.theme-lava .game-btn {
+    border-color: #ff4500;
+    color: #ff4500;
+    background: rgba(40, 10, 0, 0.8);
+}
+
+.theme-lava .game-btn:hover {
+    background: #ff4500;
+    color: #000;
+}
+/*alterar ambiente*/
+
+/* Estilo Base para o Botão de Alternar Ambiente */
+#theme-toggle.btn-secondary {
+    background: rgba(0, 40, 50, 0.6);
+    border: 1px solid var(--neon-blue); /* Usa a variável que já definimos no sistema */
+    color: var(--neon-blue);
+    padding: 12px 25px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); /* Corte trapezoidal para visual militar */
+}
+
+#theme-toggle.btn-secondary:hover {
+    background: var(--neon-blue);
+    color: green;
+    box-shadow: 0 0 15px var(--neon-blue);
+    transform: translateY(-2px);
+}
+
+#theme-toggle.btn-secondary:active {
+    transform: translateY(1px);
+    filter: brightness(0.8);
+}
+
+/* Ajustes automáticos quando o tema for Lava */
+.theme-lava #theme-toggle.btn-secondary {
+    background: rgba(60, 10, 0, 0.7);
+    border-color: #ff4500;
+    color: #ff4500;
+}
+
+.theme-lava #theme-toggle.btn-secondary:hover {
+    background: #ff4500;
+    color: #fff;
+    box-shadow: 0 0 20px #ff4500;
+}
+
+/* Estilização da descrição da trilha sonora no menu */
+.audio-info {
+    margin-top: 25px;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    opacity: 0.5;
+    text-transform: uppercase;
+}
+/* --- EFEITOS TEMA OCEANO (PADRÃO) --- */
+
+.theme-ocean #canvas-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: 
+        linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    animation: grid-pulse 4s infinite;
+}
+
+@keyframes grid-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+}
+
+/* --- EFEITOS TEMA LAVA --- */
+
+.theme-lava #canvas-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, transparent 30%, rgba(255, 69, 0, 0.15));
+    pointer-events: none;
+}
+
+/* Distorção de Calor (Onda Térmica) no Canvas */
+.theme-lava #gameCanvas {
+    filter: url(#lava-distortion); /* Requer filtro SVG no HTML ou pode usar blur leve */
+    animation: heat-shimmer 2s infinite alternate;
+}
+
+@keyframes heat-shimmer {
+    from { filter: drop-shadow(0 0 10px rgba(255, 69, 0, 0.2)) brightness(1); }
+    to { filter: drop-shadow(0 0 25px rgba(255, 69, 0, 0.4)) brightness(1.1); }
+}
+
+/* Brasas Flutuantes (Overlay Animado) */
+.theme-lava #game-container::before {
+    content: "";
+    position: absolute;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(#ff4500 1px, transparent 1px);
+    background-size: 100px 100px;
+    opacity: 0.2;
+    animation: embers-float 10s linear infinite;
     pointer-events: none;
     z-index: 5;
 }
 
-.wave {
+@keyframes embers-float {
+    from { background-position: 0 0; }
+    to { background-position: 100px -500px; }
+}
+
+/* --- ESTADOS DE BOTÕES ESPECÍFICOS --- */
+
+.theme-lava .btn-retro, .theme-lava #start-btn {
+    box-shadow: inset 0 0 15px rgba(255, 69, 0, 0.4);
+    text-shadow: 0 0 8px #ff4500;
+}
+
+.theme-ocean .btn-retro, .theme-ocean #start-btn {
+    box-shadow: inset 0 0 15px rgba(0, 242, 255, 0.2);
+    text-shadow: 0 0 8px #00f2ff;
+}
+/* --- EFEITO GLITCH/ABERRAÇÃO (OCEANO) --- */
+.theme-ocean #gameCanvas {
+    animation: blue-flicker 5s infinite;
+}
+
+@keyframes blue-flicker {
+    0%, 90%, 100% { filter: drop-shadow(0 0 5px var(--neon-blue)) brightness(1); }
+    92% { filter: drop-shadow(-2px 0 0 #ff00ff) drop-shadow(2px 0 0 #00ffff) brightness(1.2); }
+    95% { filter: drop-shadow(0 0 15px var(--neon-blue)) brightness(1.5); }
+}
+
+/* --- EFEITO VULCÂNICO AVANÇADO (LAVA) --- */
+.theme-lava #canvas-wrapper {
+    /* Efeito de vinheta de calor nas bordas */
+    box-shadow: inset 0 0 150px rgba(139, 0, 0, 0.8);
+}
+
+/* Fumaça e fuligem flutuante */
+.theme-lava #canvas-wrapper::after {
+    content: "";
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 200%;
-    height: 100%;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 200" fill="%230077b6"><path d="M0,100 C200,150 400,50 600,100 C800,150 1000,50 1200,100 C1400,150 1600,50 1600,100 V200 H0 Z" /></svg>');
-    background-size: 1000px 180px;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(20, 20, 20, 0.4) 0%, transparent 70%);
+    background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+    opacity: 0.3;
+    animation: smoke-drift 20s linear infinite;
+    pointer-events: none;
 }
 
-.wave:nth-child(1) { animation: wave-move 20s infinite; opacity: 0.2; bottom: 15px; }
-.wave:nth-child(2) { animation: wave-move 13s -2s infinite; opacity: 0.5; bottom: 10px; }
-.wave:nth-child(3) { animation: wave-move 8s -5s infinite; opacity: 0.8; }
-
-@keyframes wave-move {
-    0% { transform: translateX(0) scaleY(1); }
-    50% { transform: translateX(-25%) scaleY(0.8); }
-    100% { transform: translateX(-50%) scaleY(1); }
+@keyframes smoke-drift {
+    from { transform: rotate(0deg) translate(0, 0); }
+    to { transform: rotate(5deg) translate(-50px, -100px); }
 }
 
-/* --- ÁREA DO JOGO --- */
-#game-screen {
-    position: relative;
-    z-index: 10;
-    padding: 20px;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
+/* --- INTERFACE TÁTICA (HUD) --- */
+.stat-box .value {
+    font-family: 'Orbitron', sans-serif; /* Sugestão de fonte para o tema */
+    letter-spacing: 3px;
+    transition: all 0.3s ease;
 }
 
-.game-header {
-    width: 100%;
-    max-width: 1100px;
+.theme-lava .stat-box .value {
+    color: #ffcc00;
+    text-shadow: 0 0 10px #ff4500, 0 0 20px #8b0000;
+}
+/*Estabilidade para o tabuleiro*/
+#canvas-wrapper {
+    position: relative; /* Necessário para o container se basear nesta área */
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 15px 25px;
-    background: var(--glass);
-    border-radius: 15px;
-    border-bottom: 2px solid var(--electric-blue);
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.turn-display-center {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-}
-
-#header-turn-msg {
-    font-weight: bold;
-    color: var(--cyan-light);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.your-turn-glow {
-    color: #00ff00 !important;
-    text-shadow: 0 0 10px #00ff00;
-    animation: pulse-turn 1.5s infinite;
-}
-
-@keyframes pulse-turn {
-    0%, 100% { opacity: 1; } 50% { opacity: 0.6; }
-}
-
-/* --- LAYOUT PRINCIPAL (SONAR + TABULEIROS) --- */
-.main-layout {
-    display: flex;
     justify-content: center;
-    align-items: flex-start;
-    gap: 40px;
-    width: 100%;
-    max-width: 1200px;
-}
-
-/* --- SONAR REALISTA --- */
-#sonar-container {
-    width: 220px;
-    background: var(--glass);
-    border: 1px solid var(--border-glass);
-    border-left: 4px solid var(--radar-green);
-    border-radius: 12px;
-    padding: 15px;
-    backdrop-filter: blur(10px);
-}
-
-.sonar-header {
-    font-size: 0.7rem;
-    color: var(--radar-green);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    letter-spacing: 1px;
-    font-weight: bold;
-}
-
-.radar-display {
-    position: relative;
-    width: 170px;
-    height: 170px;
-    background: radial-gradient(circle, #001a0f 0%, #000814 100%);
-    border: 2px solid var(--radar-green);
-    border-radius: 50%;
-    margin: 0 auto 15px;
     overflow: hidden;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
 }
 
-.radar-circles {
+#message-container {
     position: absolute;
-    width: 100%; height: 100%;
-    background-image: radial-gradient(circle, transparent 30%, rgba(0, 255, 65, 0.05) 31%, transparent 32%, transparent 60%, rgba(0, 255, 65, 0.05) 61%, transparent 62%);
-    border-radius: 50%;
-}
-
-.radar-sweep {
-    position: absolute;
-    width: 100%; height: 100%;
-    background: conic-gradient(from 0deg, rgba(0, 255, 65, 0.3) 0deg, transparent 90deg);
-    animation: rotate-radar 4s linear infinite;
-}
-
-@keyframes rotate-radar {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.blip {
-    position: absolute;
-    width: 5px; height: 5px;
-    background: var(--radar-green);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--radar-green);
-    animation: blip-fade 2s infinite;
-}
-
-@keyframes blip-fade {
-    0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
-}
-
-#player-list {
-    list-style: none;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.player-item {
-    font-size: 0.85rem;
-    color: var(--cyan-light);
-    padding: 5px 0;
-    border-bottom: 1px solid rgba(144, 224, 239, 0.1);
-}
-
-.player-item.is-me { color: white; font-weight: bold; }
-
-/* --- TABULEIROS --- */
-.battlefield {
-    display: flex;
-    gap: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.grid-box h3 {
+    top: -15px; /* Fixa no topo da área do jogo */
+    left: 50%;
+    transform: translateX(-50%); /* Centraliza horizontalmente */
+    z-index: 20;
+    pointer-events: none; /* Garante que o clique passe para o canvas */
+    width: 90%;
     text-align: center;
-    margin-bottom: 15px;
-    color: var(--cyan-light);
-    font-size: 0.9rem;
+}
+
+#message {
+    font-family: 'Orbitron', 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.6);
+    display: inline-block;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+/* Estilo por Tema */
+.theme-ocean #message {
+    color: var(--neon-blue);
+    border: 1px solid var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+}
+
+.theme-lava #message {
+    color: #ffcc00;
+    border: 1px solid #ff4500;
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
+}
+/* --- TEMA CYBER (Música: Trigger) --- */
+.theme-cyber {
+    --neon-pink: #ff0055;
+    --neon-purple: #bc13fe;
+    background: #050505;
+}
+
+.theme-cyber #canvas-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(255, 0, 85, 0.05) 0px, transparent 2px);
+    pointer-events: none;
+}
+
+.theme-cyber #message {
+    color: var(--neon-pink);
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 20px var(--neon-pink), inset 0 0 10px var(--neon-purple);
+    animation: cyber-glitch 0.2s infinite alternate;
+}
+
+@keyframes cyber-glitch {
+    from { transform: translateX(-52%) skewX(2deg); }
+    to { transform: translateX(-48%) skewX(-2deg); }
+}
+
+/* --- TEMA ABISSAL (Música: Undefined) --- */
+.theme-abyssal {
+    background: radial-gradient(circle, #001a1a 0%, #000 100%);
+}
+
+.theme-abyssal #canvas-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.theme-abyssal #message {
+    color: #00ffcc;
+    border: none;
+    background: rgba(0, 50, 50, 0.4);
+    font-style: italic;
+    text-shadow: 0 0 15px #00ffcc;
+}
+.theme-selection-wrapper {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.selection-label {
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+    color: #aaa;
     letter-spacing: 2px;
 }
 
-.grid {
+.theme-buttons-grid {
     display: grid;
-    grid-template-columns: repeat(10, 38px);
-    grid-template-rows: repeat(10, 38px);
-    gap: 2px;
-    background: rgba(144, 224, 239, 0.1);
-    padding: 8px;
-    border: 1px solid var(--royal-blue);
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
-.cell {
-    width: 38px; height: 38px;
-    background: rgba(0, 53, 102, 0.4);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.cell:hover { background: var(--royal-blue); }
-.cell.ship i { color: var(--cyan-light); font-size: 1.2rem; }
-.cell.hit { background: var(--hit) !important; box-shadow: 0 0 10px var(--hit); }
-.cell.miss { background: var(--miss) !important; opacity: 0.6; }
-
-/* --- INPUTS E BOTÕES --- */
-input[type="text"] {
-    width: 100%; padding: 16px; margin-bottom: 25px;
-    background: rgba(255, 255, 255, 0.05); border: 2px solid var(--royal-blue);
-    border-radius: 12px; color: white; text-align: center; outline: none;
-}
-
-button {
-    width: 100%; padding: 18px; background: #0077b6; color: white;
-    border: none; border-radius: 12px; font-weight: bold; cursor: pointer;
-    text-transform: uppercase; transition: 0.3s;
-}
-
-button:hover { background: var(--electric-blue); transform: translateY(-3px); }
-
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 1000px) {
-    .main-layout { flex-direction: column; align-items: center; }
-    #sonar-container { width: 100%; max-width: 800px; display: flex; align-items: center; gap: 20px; }
-    .radar-display { margin: 0; width: 100px; height: 100px; }
-}
-/* Blip Azul (Aliado) */
-.blip.blue-blip {
-    background: var(--electric-blue);
-    box-shadow: 0 0 10px var(--electric-blue);
-}
-
-/* Blip Vermelho (Inimigo) */
-.blip.red-blip {
-    background: #ff4d4d;
-    box-shadow: 0 0 10px #ff4d4d;
-}
-
-/* Estilo da legenda do inimigo */
-.enemy-status {
-    color: #ff4d4d !important;
-}
-
-/* Ajuste no container de blips para evitar que pontos sumam no centro */
-#radar-blips {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 3;
-}
-/* Animação de balanço (Sea Sway) */
-@keyframes sea-sway {
-    0%, 100% {
-        transform: translateY(0) rotate(-3deg);
-    }
-    50% {
-        transform: translateY(-4px) rotate(3deg);
-    }
-}
-
-/* Aplicando aos ícones de navio na sua frota */
-.cell.ship i {
-    display: inline-block; /* Necessário para que o transform funcione */
-    color: var(--cyan-light);
-    font-size: 1.2rem;
-    animation: sea-sway 3s ease-in-out infinite;
-}
-
-/* Aplicando aos ícones de fogo nos navios atingidos (opcional, para efeito de destroços) */
-.cell.hit i {
-    display: inline-block;
-    animation: sea-sway 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 5px var(--hit));
-}
-
-/* Diferenciando o tempo de animação para não ficarem todos sincronizados */
-.cell.ship:nth-child(odd) i {
-    animation-duration: 3.5s;
-    animation-delay: 0.5s;
-}
-
-.cell.ship:nth-child(even) i {
-    animation-duration: 2.8s;
-    animation-delay: 0.2s;
-}
-/* Esconde o cursor padrão apenas no tabuleiro inimigo */
-#enemy-grid {
-    cursor: none !important;
-}
-
-/* Estilização do cursor customizado */
-#custom-cursor {
-    position: fixed;
-    pointer-events: none; /* Garante que o clique passe através dele para a célula */
-    z-index: 9999;
-    color: #ff4d4d; /* Cor de alvo hostil */
-    font-size: 24px;
-    display: none; /* Escondido por padrão */
-    transform: translate(-50%, -50%); /* Centraliza o ícone no ponto exato do mouse */
-    filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.8));
-    transition: transform 0.1s ease-out; /* Suaviza levemente o movimento */
-}
-
-/* Efeito de clique (opcional) */
-#custom-cursor.clicking {
-    transform: translate(-50%, -50%) scale(0.8);
-    color: #fff;
-}
-
-#reset-fleet-btn {
+.theme-select-btn {
     background: transparent;
-    border: 1px solid #00b4d8;
-    color: #00b4d8;
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
     padding: 8px;
-    font-family: 'Courier New', monospace;
+    font-family: 'Orbitron', sans-serif;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s;
+    font-size: 0.7rem;
 }
 
-#reset-fleet-btn:hover:not(:disabled) {
-    background: rgba(0, 180, 216, 0.2);
-    box-shadow: 0 0 10px #00b4d8;
+.theme-select-btn:hover, .theme-select-btn.active {
+    background: var(--neon-blue);
+    color: #000;
+    box-shadow: 0 0 10px var(--neon-blue);
 }
 
-#reset-fleet-btn:disabled {
-    border-color: #555;
-    color: #555;
-    cursor: not-allowed;
-    opacity: 0.5;
+/* Ajuste de cores para quando o tema muda */
+.theme-lava .theme-select-btn { border-color: #ff4500; color: #ff4500; }
+.theme-lava .theme-select-btn.active { background: #ff4500; color: #fff; }
+/* --- TEMA CYBERPUNK (Correção de Centralização) --- */
+.theme-cyber {
+    --neon-pink: #ff0055;
+    --neon-purple: #bc13fe;
+    background-color: #050505 !important;
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(2, 11, 22, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background: #03045e;
-    border: 2px solid #00b4d8;
-    padding: 40px;
+/* Container de Mensagens - Garantindo Centralização Absoluta */
+#message-container {
+    position: absolute;
+    top: 9%; /* Posicionado acima do tabuleiro */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    pointer-events: none;
+    width: auto;
+    min-width: 300px;
     text-align: center;
-    box-shadow: 0 0 30px #00b4d8;
-    max-width: 400px;
-    width: 90%;
 }
 
-.modal-content i {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    display: block;
+/* Estilo da Mensagem no Tema Cyber */
+.theme-cyber #message {
+    color: var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink);
+    border: 2px solid var(--neon-purple);
+    background: rgba(20, 0, 20, 0.85);
+    padding: 5px 5px;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    /* Removido o skew agressivo que tirava do centro */
+    animation: cyber-pulse 1.5s infinite ease-in-out; 
 }
 
-#modal-title {
-    font-size: 2rem;
-    color: #00b4d8;
-    margin-bottom: 10px;
+/* Animação de Pulso Neon (Substitui o Glitch que desalinhava) */
+@keyframes cyber-pulse {
+    0%, 100% { 
+        box-shadow: 0 0 15px var(--neon-purple), inset 0 0 5px var(--neon-purple);
+        opacity: 1;
+    }
+    50% { 
+        box-shadow: 0 0 25px var(--neon-pink), inset 0 0 10px var(--neon-pink);
+        opacity: 0.8;
+    }
 }
 
-.modal-buttons {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
-    justify-content: center;
+/* Camada de Scanlines Cyberpunk */
+.theme-cyber #canvas-wrapper::before {
+    content: " ";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    background-size: 100% 4px, 3px 100%;
+    pointer-events: none;
+    z-index: 5;
 }
 
-.btn-primary { background: #00b4d8; color: #020b16; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
-.btn-danger { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+/*tamanho da fonte*/
+#message {
+    font-size: 0.8rem; /* <-- Tamanho da fonte da mensagem central */
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+}
+/* Cor do rótulo de seleção (texto estático) */
+.selection-label {
+    color: #00f2ff; /* Ciano neon para destacar no escuro */
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px rgba(0, 242, 255, 0.5);
+}
 
-.btn-primary:hover { box-shadow: 0 0 15px #00b4d8; }
-.btn-danger:hover { background: #ff4d4d; color: white; }
+/* Estilo base dos botões de tema */
+.theme-select-btn {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #00f2ff;
+    color: #00f2ff;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+}
+
+/* --- AJUSTE DE HOVER (Onde estava o problema) --- */
+.theme-select-btn:hover {
+    background: #00f2ff; 
+    color: #000; /* Texto preto para contrastar com o fundo brilhante */
+    box-shadow: 0 0 20px #00f2ff;
+    transform: scale(1.05);
+}
+
+/* Estilo para o botão que já está selecionado (Active) */
+.theme-select-btn.active {
+    background: #00f2ff;
+    color: #000;
+    box-shadow: 0 0 15px #00f2ff;
+    font-weight: bold;
+}
+
+/* Ajustes específicos para o Tema Vulcânico (Lava) se selecionado */
+.theme-lava .theme-select-btn { border-color: #ff4500; color: #ff4500; }
+.theme-lava .theme-select-btn:hover, 
+.theme-lava .theme-select-btn.active { 
+    background: #ff4500; 
+    color: #fff; 
+    box-shadow: 0 0 20px #ff4500; 
+}

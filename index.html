@@ -1,111 +1,82 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batalha Naval</title>
-    <!-- Ícones e Fontes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <!-- Ably Realtime SDK -->
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BATALHA NAVAL v4.0</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Fonte Orbitron para estética de radar militar -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="theme-ocean">
 
-    <!-- TELA DE LOGIN -->
-    <div id="login-screen">
-        <main class="login-card">
-            <i class="fa-solid fa-ship ship-icon-main"></i>
-            <h1>BATALHA NAVAL</h1>
-            <input type="text" id="username" placeholder="Nome do Almirante" maxlength="15">
-            <button id="start-btn">ZARPAR PARA O COMBATE</button>
-        </main>
-        
-        <!-- Efeito de Ondas (Fundo Dinâmico) -->
-        <div class="waves-container">
-            <div class="wave"></div>
-            <div class="wave"></div>
-            <div class="wave"></div>
-        </div>
-    </div>
-
-    <!-- ÁREA DO JOGO -->
-    <div id="game-screen" style="display: none;">
-        <header class="game-header">
-            <div class="player-info">
-                <i class="fa-solid fa-anchor"></i>
-                <span id="display-name">Almirante</span>
+    <div id="game-container">
+        <!-- HUD SUPERIOR: Status à esquerda e Ações/Mensagens à direita -->
+        <header id="game-header">
+            <div class="header-left">
+                <div class="stat-box">
+                    <span class="label">PONTOS</span>
+                    <span id="score" class="value">0000</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">ALVOS</span>
+                    <span id="targets-left" class="value">00</span>
+                </div>
             </div>
 
-            <!-- Turno Centralizado no Header -->
-            <div class="turn-display-center">
-                <span id="header-turn-msg">PREPARAR CANHÕES!</span>
+            <!-- Lado Direito: Botão Sonar e Mensagens Logo Abaixo -->
+            <div class="header-right">
+                <button id="audio-toggle" class="btn-retro">CARREGANDO...</button>
+                
+                <!-- MENSAGENS DO SISTEMA: Posicionado abaixo do botão Sonar -->
+                <div id="message-container">
+                    <p id="message">SISTEMA OFFLINE</p>
+                </div>
             </div>
-
-            <div id="game-status">RADAR ATIVO</div>
         </header>
 
-        <div class="main-layout">
-            <!-- SONAR CIRCULAR (ESTILO NAVIO) -->
-            <aside id="sonar-container">
-                <div class="sonar-header">
-                    <i class="fa-solid fa-satellite-dish"></i>
-                    <span>RASTREAMENTO</span>
-                </div>
+        <!-- MENU INICIAL: Seleção de Ambiente -->
+        <div id="game-menu" class="overlay">
+            <div class="menu-content">
+                <h1>BATALHA NAVAL</h1>
+                <p class="subtitle">SISTEMA DE RADAR ISOMÉTRICO v4.0</p>
                 
-                <!-- Display do Radar -->
-                <div class="radar-display">
-                    <div class="radar-sweep"></div>
-                    <div class="radar-circles"></div>
-                    <div id="radar-blips">
-                        <!-- Pontos dos jogadores injetados via JS -->
+                <div class="mission-briefing">
+                    <p>> OPERADOR: ALEXANDRO A. RODRIGUES</p>
+                    <p>> STATUS: AGUARDANDO INICIALIZAÇÃO</p>
+                    <p>> LOCAL: SUZANO, SP</p>
+                </div>
+
+                <div class="menu-controls">
+                    <div class="theme-selection-wrapper">
+                        <p class="selection-label">SELECIONE O AMBIENTE DE OPERAÇÃO:</p>
+                        <div class="theme-buttons-grid">
+                            <button class="theme-select-btn active" data-theme="ocean">OCEANO</button>
+                            <button class="theme-select-btn" data-theme="lava">VULCÂNICO</button>
+                            <button class="theme-select-btn" data-theme="cyber">CYBERPUNK</button>
+                            <button class="theme-select-btn" data-theme="abyssal">ABISSAL</button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Legenda de Almirantes Online -->
-                <ul id="player-list">
-                    <!-- Nomes aparecerão aqui -->
-                </ul>
-
-                <!-- BOTÃO SOLICITADO ADICIONADO AQUI -->
-                <div class="reset-container" style="margin-top: 20px; text-align: center; width: 100%;">
-                    <button id="reset-fleet-btn" style="width: 100%; margin-bottom: 5px;">
-                        <i class="fa-solid fa-rotate"></i> REPOSICIONAR
-                    </button>
-                    <div id="reset-count" style="font-size: 0.7rem; color: #90e0ef;">Cargas de emergência: 3/3</div>
-                </div>
-            </aside>
-
-            <!-- CAMPO DE BATALHA -->
-            <main class="battlefield">
-                <div class="grid-box">
-                    <h3>SUA FROTA</h3>
-                    <div id="player-grid" class="grid"></div>
+                    <button id="start-btn">INICIAR OPERAÇÃO</button>
                 </div>
                 
-                <div class="grid-box">
-                    <h3>OCEANO INIMIGO</h3>
-                    <div id="enemy-grid" class="grid"></div>
-                </div>
-            </main>
+                <p class="audio-info">ÁUDIO DINÂMICO CONFIGURADO</p>
+            </div>
         </div>
+
+        <!-- ÁREA DO JOGO -->
+        <main id="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+        </main>
+
+        <!-- RODAPÉ -->
+        <footer id="game-footer">
+            <p class="info-text">RECONHECIMENTO TÁTICO: CLIQUE NO MAPA PARA DISPARAR</p>
+            <p class="author-tag">LOGICA: A.A. RODRIGUES</p>
+        </footer>
     </div>
 
-    <div id="custom-cursor">
-        <i class="fa-sharp fa-thin fa-crosshairs"></i>
-    </div>
-<!-- MODAL DE FINAL DE JOGO -->
-<div id="game-over-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <i id="modal-icon" class="fa-solid"></i>
-        <h2 id="modal-title">GAME OVER</h2>
-        <p id="modal-message">Mensagem de vitória ou derrota aqui.</p>
-        <div class="modal-buttons">
-            <button id="rematch-btn" class="btn-primary">PEDIR REVANCHE</button>
-            <button id="exit-btn" class="btn-danger">SAIR DA PARTIDA</button>
-        </div>
-    </div>
-</div>
-    <!-- Script Principal -->
+    <!-- Script consolidado v4.0 -->
     <script src="script.js"></script>
 </body>
 </html>
